@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Human 3.0 Task App</title>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <style>
     body {
       font-family: system-ui, sans-serif;
@@ -160,6 +161,33 @@
 
     updateStatsUI();
 
+    function triggerDopamineEffect() {
+      // Confetti burst
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 }
+      });
+
+      // Audio chime sound effect via Web Audio API
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+      osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.3); // A5
+
+      gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.3);
+    }
+
     function saveTask(doImmediately = false) {
       const text = document.getElementById('taskInput').value;
       const pillar = document.getElementById('pillarSelect').value;
@@ -167,7 +195,6 @@
 
       if (!text) return alert('Enter a task first!');
 
-      // If immediate mode, force it to priority 0 (highest top priority)
       if (doImmediately) priority = "0";
 
       const tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
@@ -177,7 +204,6 @@
       document.getElementById('taskInput').value = '';
 
       if (doImmediately) {
-        // Jump straight to focus mode for this pillar!
         loadFocusTask(pillar);
       } else {
         alert('Task saved to bank!');
@@ -222,6 +248,9 @@
       else if (task.priority === "2") xpGained = 75;
       else if (task.priority === "3") xpGained = 50;
 
+      // BLAST CONFETTI + SOUND
+      triggerDopamineEffect();
+
       addXP(xpGained);
 
       const activePillar = task.pillar;
@@ -234,7 +263,6 @@
       localStorage.setItem('totalXP', currentXP);
 
       updateStatsUI();
-      alert(`🎉 LEVEL UP PROGRESS! +${amount} XP Earned!`);
     }
 
     function updateStatsUI() {
