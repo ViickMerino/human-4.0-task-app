@@ -8,7 +8,7 @@
   <style>
     body {
       font-family: system-ui, -apple-system, sans-serif;
-      background: #090d16;
+      background: #0a0a0c;
       color: #f8fafc;
       display: flex;
       flex-direction: column;
@@ -20,71 +20,73 @@
       box-sizing: border-box;
     }
     .card {
-      background: #111827;
+      background: #121216;
       padding: 24px;
       border-radius: 14px;
       width: 100%;
       max-width: 400px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.8);
-      border: 1px solid #1f293d;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.9);
+      border: 1px solid #2a2a32;
       margin-bottom: 20px;
     }
-    h2, h3 { margin-top: 0; color: #ff6b00; text-align: center; text-transform: uppercase; letter-spacing: 1px; }
+    h2, h3 { 
+      margin-top: 0; 
+      color: #d4af37; 
+      text-align: center; 
+      text-transform: uppercase; 
+      letter-spacing: 1.5px; 
+    }
     
     .level-container { text-align: center; margin-bottom: 10px; }
-    .level-badge { font-size: 1.3rem; font-weight: 900; color: #10b981; text-shadow: 0 0 10px rgba(16,185,129,0.3); }
-    .xp-text { font-size: 0.85rem; color: #94a3b8; margin-top: 4px; font-weight: bold; }
-    .combo-text { font-size: 0.9rem; color: #ff6b00; font-weight: bold; margin-top: 6px; }
+    .level-badge { 
+      font-size: 1.3rem; 
+      font-weight: 900; 
+      color: #f5d77f; 
+      text-shadow: 0 0 12px rgba(212, 175, 55, 0.4); 
+    }
+    .xp-text { font-size: 0.85rem; color: #a1a1aa; margin-top: 4px; font-weight: bold; }
+    .combo-text { font-size: 0.9rem; color: #d4af37; font-weight: bold; margin-top: 6px; }
 
     input, select, button {
       width: 100%;
       padding: 14px;
       margin-top: 10px;
       border-radius: 8px;
-      border: 1px solid #334155;
-      background: #090d16;
+      border: 1px solid #2a2a32;
+      background: #0a0a0c;
       color: #fff;
       font-size: 1rem;
       box-sizing: border-box;
     }
-    .mic-row {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-    }
-    .mic-btn {
-      width: auto;
-      background: #1f293d;
-      border: 1px solid #ff6b00;
-      color: #ff6b00;
-      padding: 14px 18px;
-      margin-top: 10px;
-      cursor: pointer;
-      font-size: 1.1rem;
+    input:focus, select:focus {
+      border-color: #d4af37;
+      outline: none;
     }
     button.add-btn {
-      background: #ff6b00;
-      color: #000;
+      background: #2a2a32;
+      color: #f5d77f;
+      border: 1px solid #d4af37;
       font-weight: 800;
-      border: none;
       margin-top: 12px;
       cursor: pointer;
       text-transform: uppercase;
+      letter-spacing: 1px;
     }
     button.now-btn {
-      background: #10b981;
+      background: linear-gradient(135deg, #d4af37, #f5d77f);
       color: #000;
-      font-weight: 800;
+      font-weight: 900;
       border: none;
       margin-top: 8px;
       cursor: pointer;
       text-transform: uppercase;
-      box-shadow: 0 0 15px rgba(16,185,129,0.4);
+      letter-spacing: 1px;
+      box-shadow: 0 0 20px rgba(212,175,55,0.3);
     }
     button.thrill-btn {
       background: transparent;
-      border: 2px solid #ff6b00;
-      color: #ff6b00;
+      border: 1px solid #d4af37;
+      color: #d4af37;
       font-weight: 800;
       margin-top: 12px;
       cursor: pointer;
@@ -97,9 +99,9 @@
       margin-top: 10px;
     }
     .pillar-btn {
-      background: #090d16;
-      color: #ff6b00;
-      border: 2px solid #ff6b00;
+      background: #0a0a0c;
+      color: #d4af37;
+      border: 1px solid #d4af37;
       padding: 14px;
       font-size: 0.9rem;
       font-weight: bold;
@@ -107,7 +109,7 @@
       cursor: pointer;
     }
     .focus-card {
-      background: #090d16;
+      background: #0a0a0c;
       color: #fff;
       padding: 24px;
       border-radius: 14px;
@@ -115,24 +117,24 @@
       max-width: 400px;
       text-align: center;
       display: none;
-      border: 2px solid #10b981;
-      box-shadow: 0 0 30px rgba(16, 185, 129, 0.3);
+      border: 2px solid #d4af37;
+      box-shadow: 0 0 35px rgba(212, 175, 55, 0.25);
     }
     .focus-task-title {
       font-size: 1.5rem;
       font-weight: bold;
       margin: 16px 0;
-      color: #f8fafc;
+      color: #ffffff;
     }
     .timer-display {
       font-size: 2.2rem;
       font-weight: 900;
-      color: #ff6b00;
+      color: #f5d77f;
       margin-bottom: 12px;
       font-family: monospace;
     }
     .complete-btn {
-      background: #10b981;
+      background: linear-gradient(135deg, #d4af37, #f5d77f);
       color: #000;
       font-size: 1.1rem;
       font-weight: 900;
@@ -141,7 +143,8 @@
       cursor: pointer;
       border-radius: 8px;
       text-transform: uppercase;
-      box-shadow: 0 0 20px rgba(16,185,129,0.5);
+      letter-spacing: 1px;
+      box-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
     }
     .history-list {
       margin-top: 12px;
@@ -152,7 +155,7 @@
     }
     .history-item {
       padding: 8px 0;
-      border-bottom: 1px solid #1f293d;
+      border-bottom: 1px solid #2a2a32;
     }
   </style>
 </head>
@@ -170,10 +173,7 @@
   <!-- ADD TASK SECTION -->
   <div class="card">
     <h2>Add Task</h2>
-    <div class="mic-row">
-      <input type="text" id="taskInput" placeholder="What needs to be done?">
-      <button type="button" class="mic-btn" onclick="startVoiceInput()" title="Voice Dump">🎤</button>
-    </div>
+    <input type="text" id="taskInput" placeholder="What needs to be done?">
     
     <select id="pillarSelect">
       <option value="Spiritual">Spiritual</option>
@@ -207,7 +207,7 @@
 
   <!-- SINGLE FOCUS TASK DISPLAY -->
   <div id="focusCard" class="focus-card">
-    <small id="currentPillarLabel" style="text-transform: uppercase; letter-spacing: 1px; color: #ff6b00; font-weight: bold;"></small>
+    <small id="currentPillarLabel" style="text-transform: uppercase; letter-spacing: 1.5px; color: #d4af37; font-weight: bold;"></small>
     <div id="focusTaskText" class="focus-task-title">No task selected</div>
     <div id="timerDisplay" class="timer-display">⏱️ 01:00</div>
     <button id="completeBtn" class="complete-btn" onclick="completeCurrentTask()">✅ COMPLETE (+XP)</button>
@@ -215,7 +215,7 @@
 
   <!-- COMPLETED VAULT -->
   <div class="card">
-    <button style="background: #1f293d; border: 1px solid #334155; color: #94a3b8;" onclick="toggleHistory()">🏆 View Completed Vault</button>
+    <button style="background: #121216; border: 1px solid #2a2a32; color: #a1a1aa;" onclick="toggleHistory()">🏆 View Completed Vault</button>
     <div id="historyList" class="history-list"></div>
   </div>
 
@@ -226,22 +226,6 @@
     let comboStreak = 0;
 
     updateStatsUI();
-
-    function startVoiceInput() {
-      if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-        alert('Voice input is not supported on this browser.');
-        return;
-      }
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      const recognition = new SpeechRecognition();
-      recognition.lang = 'en-US';
-      recognition.start();
-
-      recognition.onresult = function(event) {
-        const transcript = event.results[0][0].transcript;
-        document.getElementById('taskInput').value = transcript;
-      };
-    }
 
     function startTimer() {
       clearInterval(timerInterval);
@@ -264,7 +248,12 @@
     }
 
     function triggerDopamineEffect() {
-      confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
+      confetti({ 
+        particleCount: 120, 
+        spread: 80, 
+        origin: { y: 0.6 },
+        colors: ['#d4af37', '#f5d77f', '#ffffff']
+      });
 
       const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       const osc = audioCtx.createOscillator();
