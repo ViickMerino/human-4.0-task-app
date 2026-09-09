@@ -28,6 +28,23 @@
       margin-bottom: 20px;
     }
     h2, h3 { margin-top: 0; color: #38bdf8; text-align: center; }
+    
+    /* XP BAR */
+    .level-container {
+      text-align: center;
+      margin-bottom: 15px;
+    }
+    .level-badge {
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: #f59e0b;
+    }
+    .xp-text {
+      font-size: 0.85rem;
+      color: #94a3b8;
+      margin-top: 4px;
+    }
+
     input, select, button {
       width: 100%;
       padding: 12px;
@@ -72,7 +89,7 @@
       max-width: 400px;
       text-align: center;
       display: none;
-      box-shadow: 0 0 20px rgba(56, 189, 248, 0.4);
+      box-shadow: 0 0 25px rgba(56, 189, 248, 0.5);
     }
     .focus-task-title {
       font-size: 1.5rem;
@@ -93,6 +110,14 @@
 </head>
 <body>
 
+  <!-- STATS HEADER -->
+  <div class="card">
+    <div class="level-container">
+      <div class="level-badge" id="levelDisplay">⚡ HUMAN LEVEL: 1</div>
+      <div class="xp-text" id="xpDisplay">TOTAL XP: 0 / 100</div>
+    </div>
+  </div>
+
   <!-- ADD TASK SECTION -->
   <div class="card">
     <h2>Add New Task</h2>
@@ -106,10 +131,10 @@
     </select>
 
     <select id="eisenhowerSelect">
-      <option value="1">🔥 Urgent & Important (Do First)</option>
-      <option value="2">📅 Important, Not Urgent (Schedule)</option>
-      <option value="3">⚡ Urgent, Not Important (Quick)</option>
-      <option value="4">🧹 Not Urgent & Not Important</option>
+      <option value="1">🔥 Urgent & Important (+100 XP)</option>
+      <option value="2">📅 Important, Not Urgent (+75 XP)</option>
+      <option value="3">⚡ Urgent, Not Important (+50 XP)</option>
+      <option value="4">🧹 Not Urgent & Not Important (+25 XP)</option>
     </select>
 
     <button class="add-btn" onclick="saveTask()">Add Task to Bank</button>
@@ -130,11 +155,14 @@
   <div id="focusCard" class="focus-card">
     <small id="currentPillarLabel" style="text-transform: uppercase; letter-spacing: 1px;"></small>
     <div id="focusTaskText" class="focus-task-title">No task selected</div>
-    <button class="complete-btn" onclick="completeCurrentTask()">✅ COMPLETE TASK</button>
+    <button class="complete-btn" onclick="completeCurrentTask()">✅ COMPLETE (+XP)</button>
   </div>
 
   <script>
     let currentTaskIndex = -1;
+
+    // Load initial stats on page open
+    updateStatsUI();
 
     function saveTask() {
       const text = document.getElementById('taskInput').value;
@@ -154,7 +182,6 @@
     function loadFocusTask(pillar) {
       const tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
       
-      // Filter for uncompleted tasks in this pillar, sorted by highest Eisenhower priority (1 first)
       const matchingTasks = tasks
         .map((t, idx) => ({ ...t, originalIndex: idx }))
         .filter(t => t.pillar === pillar && !t.done)
@@ -163,7 +190,7 @@
       const focusCard = document.getElementById('focusCard');
 
       if (matchingTasks.length === 0) {
-        alert(`No active tasks in ${pillar}! Add some above.`);
+        alert(`No active tasks in ${pillar}!`);
         focusCard.style.display = 'none';
         return;
       }
@@ -181,14 +208,40 @@
       if (currentTaskIndex === -1) return;
 
       const tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
-      tasks[currentTaskIndex].done = true;
+      const task = tasks[currentTaskIndex];
+      task.done = true;
       localStorage.setItem('tasks', JSON.stringify(tasks));
 
-      const activePillar = tasks[currentTaskIndex].pillar;
-      alert('🎉 Task completed! Level up!');
+      // Calculate XP gained based on priority
+      let xpGained = 25;
+      if (task.priority === "1") xpGained = 100;
+      else if (task.priority === "2") xpGained = 75;
+      else if (task.priority === "3") xpGained = 50;
+
+      addXP(xpGained);
+
+      const activePillar = task.pillar;
       
-      // Reload next highest priority task in this same pillar automatically
+      // Auto reload next task
       loadFocusTask(activePillar);
+    }
+
+    function addXP(amount) {
+      let currentXP = Number(localStorage.getItem('totalXP') || 0);
+      currentXP += amount;
+      localStorage.setItem('totalXP', currentXP);
+
+      updateStatsUI();
+      alert(`🎉 LEVEL UP PROGRESS! +${amount} XP Earned!`);
+    }
+
+    function updateStatsUI() {
+      const currentXP = Number(localStorage.getItem('totalXP') || 0);
+      const level = Math.floor(currentXP / 100) + 1;
+      const xpInCurrentLevel = currentXP % 100;
+
+      document.getElementById('levelDisplay').innerText = `⚡ HUMAN LEVEL: ${level}`;
+      document.getElementById('xpDisplay').innerText = `TOTAL XP: ${currentXP} (${xpInCurrentLevel}/100 to Next Level)`;
     }
   </script>
 
