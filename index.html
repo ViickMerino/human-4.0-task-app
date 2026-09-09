@@ -25,8 +25,9 @@
       width: 100%;
       max-width: 400px;
       box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      margin-bottom: 20px;
     }
-    h2 { margin-top: 0; color: #38bdf8; text-align: center; }
+    h2, h3 { margin-top: 0; color: #38bdf8; text-align: center; }
     input, select, button {
       width: 100%;
       padding: 12px;
@@ -46,10 +47,53 @@
       margin-top: 16px;
       cursor: pointer;
     }
+    .pillar-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .pillar-btn {
+      background: #1e293b;
+      color: #38bdf8;
+      border: 2px solid #38bdf8;
+      padding: 14px;
+      font-size: 0.9rem;
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .focus-card {
+      background: #0284c7;
+      color: #fff;
+      padding: 24px;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+      display: none;
+      box-shadow: 0 0 20px rgba(56, 189, 248, 0.4);
+    }
+    .focus-task-title {
+      font-size: 1.5rem;
+      font-weight: bold;
+      margin: 16px 0;
+    }
+    .complete-btn {
+      background: #22c55e;
+      color: #fff;
+      font-size: 1.1rem;
+      font-weight: bold;
+      border: none;
+      padding: 16px;
+      cursor: pointer;
+      border-radius: 8px;
+    }
   </style>
 </head>
 <body>
 
+  <!-- ADD TASK SECTION -->
   <div class="card">
     <h2>Add New Task</h2>
     <input type="text" id="taskInput" placeholder="What needs to be done?">
@@ -64,14 +108,34 @@
     <select id="eisenhowerSelect">
       <option value="1">🔥 Urgent & Important (Do First)</option>
       <option value="2">📅 Important, Not Urgent (Schedule)</option>
-      <option value="3">⚡ Urgent, Not Important (Delegate/Quick)</option>
-      <option value="4">🧹 Not Urgent & Not Important (Eliminate)</option>
+      <option value="3">⚡ Urgent, Not Important (Quick)</option>
+      <option value="4">🧹 Not Urgent & Not Important</option>
     </select>
 
     <button class="add-btn" onclick="saveTask()">Add Task to Bank</button>
   </div>
 
+  <!-- SELECT PILLAR SECTION -->
+  <div class="card">
+    <h3>Enter Focus Mode</h3>
+    <div class="pillar-grid">
+      <button class="pillar-btn" onclick="loadFocusTask('Spiritual')">Spiritual</button>
+      <button class="pillar-btn" onclick="loadFocusTask('Physical')">Physical</button>
+      <button class="pillar-btn" onclick="loadFocusTask('Mental')">Mental</button>
+      <button class="pillar-btn" onclick="loadFocusTask('Vocational')">Vocational</button>
+    </div>
+  </div>
+
+  <!-- SINGLE FOCUS TASK DISPLAY -->
+  <div id="focusCard" class="focus-card">
+    <small id="currentPillarLabel" style="text-transform: uppercase; letter-spacing: 1px;"></small>
+    <div id="focusTaskText" class="focus-task-title">No task selected</div>
+    <button class="complete-btn" onclick="completeCurrentTask()">✅ COMPLETE TASK</button>
+  </div>
+
   <script>
+    let currentTaskIndex = -1;
+
     function saveTask() {
       const text = document.getElementById('taskInput').value;
       const pillar = document.getElementById('pillarSelect').value;
@@ -85,6 +149,46 @@
 
       document.getElementById('taskInput').value = '';
       alert('Task saved!');
+    }
+
+    function loadFocusTask(pillar) {
+      const tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
+      
+      // Filter for uncompleted tasks in this pillar, sorted by highest Eisenhower priority (1 first)
+      const matchingTasks = tasks
+        .map((t, idx) => ({ ...t, originalIndex: idx }))
+        .filter(t => t.pillar === pillar && !t.done)
+        .sort((a, b) => Number(a.priority) - Number(b.priority));
+
+      const focusCard = document.getElementById('focusCard');
+
+      if (matchingTasks.length === 0) {
+        alert(`No active tasks in ${pillar}! Add some above.`);
+        focusCard.style.display = 'none';
+        return;
+      }
+
+      const topTask = matchingTasks[0];
+      currentTaskIndex = topTask.originalIndex;
+
+      document.getElementById('currentPillarLabel').innerText = `${pillar} Pillar Focus`;
+      document.getElementById('focusTaskText').innerText = topTask.text;
+      focusCard.style.display = 'block';
+      focusCard.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function completeCurrentTask() {
+      if (currentTaskIndex === -1) return;
+
+      const tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
+      tasks[currentTaskIndex].done = true;
+      localStorage.setItem('tasks', JSON.stringify(tasks));
+
+      const activePillar = tasks[currentTaskIndex].pillar;
+      alert('🎉 Task completed! Level up!');
+      
+      // Reload next highest priority task in this same pillar automatically
+      loadFocusTask(activePillar);
     }
   </script>
 
