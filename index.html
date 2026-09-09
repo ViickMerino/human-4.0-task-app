@@ -108,43 +108,64 @@
       border-radius: 8px;
       cursor: pointer;
     }
-    .focus-card {
-      background: #0a0a0c;
-      color: #fff;
-      padding: 24px;
-      border-radius: 14px;
-      width: 100%;
-      max-width: 400px;
-      text-align: center;
+
+    /* FULL-SCREEN LOCKDOWN MODAL */
+    .focus-modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: #000000;
+      z-index: 99999;
       display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      box-sizing: border-box;
+      text-align: center;
+    }
+    .focus-card-inner {
+      background: #0a0a0c;
       border: 2px solid #d4af37;
-      box-shadow: 0 0 35px rgba(212, 175, 55, 0.25);
+      border-radius: 20px;
+      padding: 32px 24px;
+      width: 100%;
+      max-width: 450px;
+      box-shadow: 0 0 60px rgba(212, 175, 55, 0.35);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
     .focus-task-title {
-      font-size: 1.5rem;
-      font-weight: bold;
-      margin: 16px 0;
+      font-size: 1.8rem;
+      font-weight: 800;
+      margin: 24px 0;
       color: #ffffff;
+      line-height: 1.3;
     }
     .timer-display {
-      font-size: 2.2rem;
+      font-size: 3rem;
       font-weight: 900;
       color: #f5d77f;
-      margin-bottom: 12px;
+      margin-bottom: 24px;
       font-family: monospace;
+      text-shadow: 0 0 15px rgba(245, 215, 127, 0.4);
     }
     .complete-btn {
       background: linear-gradient(135deg, #d4af37, #f5d77f);
       color: #000;
-      font-size: 1.1rem;
+      font-size: 1.3rem;
       font-weight: 900;
       border: none;
-      padding: 16px;
+      padding: 20px;
       cursor: pointer;
-      border-radius: 8px;
+      border-radius: 12px;
       text-transform: uppercase;
-      letter-spacing: 1px;
-      box-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
+      letter-spacing: 1.5px;
+      box-shadow: 0 0 30px rgba(212, 175, 55, 0.5);
+      width: 100%;
     }
     .history-list {
       margin-top: 12px;
@@ -231,14 +252,6 @@
       <button class="thrill-btn" onclick="triggerThrillMode()">🎲 RANDOM THRILL SPRINT</button>
     </div>
 
-    <!-- SINGLE FOCUS TASK DISPLAY -->
-    <div id="focusCard" class="focus-card">
-      <small id="currentPillarLabel" style="text-transform: uppercase; letter-spacing: 1.5px; color: #d4af37; font-weight: bold;"></small>
-      <div id="focusTaskText" class="focus-task-title">No task selected</div>
-      <div id="timerDisplay" class="timer-display">⏱️ 01:00</div>
-      <button id="completeBtn" class="complete-btn" onclick="completeCurrentTask()">✅ COMPLETE (+XP)</button>
-    </div>
-
     <!-- COMPLETED VAULT -->
     <div class="card">
       <button style="background: #121216; border: 1px solid #2a2a32; color: #a1a1aa;" onclick="toggleHistory()">🏆 View Completed Vault</button>
@@ -247,15 +260,24 @@
 
   </div>
 
+  <!-- FULL-SCREEN FOCUS LOCKDOWN MODAL -->
+  <div id="focusModal" class="focus-modal-overlay">
+    <div class="focus-card-inner">
+      <small id="currentPillarLabel" style="text-transform: uppercase; letter-spacing: 2px; color: #d4af37; font-weight: 900;"></small>
+      <div id="focusTaskText" class="focus-task-title">No task selected</div>
+      <div id="timerDisplay" class="timer-display">⏱️ 01:00</div>
+      <button id="completeBtn" class="complete-btn" onclick="completeCurrentTask()">✅ COMPLETE TASK (+XP)</button>
+    </div>
+  </div>
+
   <script>
-    const MASTER_PIN = "1234"; // Default PIN
+    const MASTER_PIN = "1234";
     let currentTaskIndex = -1;
     let timerInterval = null;
     let secondsLeft = 60;
     let comboStreak = 0;
     let currentUser = "";
 
-    // Check if user is already logged in
     checkExistingSession();
 
     function attemptLogin() {
@@ -320,9 +342,9 @@
 
     function triggerDopamineEffect() {
       confetti({ 
-        particleCount: 120, 
-        spread: 80, 
-        origin: { y: 0.6 },
+        particleCount: 150, 
+        spread: 90, 
+        origin: { y: 0.5 },
         colors: ['#d4af37', '#f5d77f', '#ffffff']
       });
 
@@ -372,29 +394,24 @@
         .filter(t => t.pillar === pillar && !t.done)
         .sort((a, b) => Number(a.priority) - Number(b.priority));
 
-      const focusCard = document.getElementById('focusCard');
-      focusCard.style.display = 'block';
+      const focusModal = document.getElementById('focusModal');
 
       if (matchingTasks.length === 0) {
-        document.getElementById('currentPillarLabel').innerText = `${pillar} Pillar Status`;
-        document.getElementById('focusTaskText').innerText = `🎉 All clear! No active tasks in ${pillar}.`;
-        document.getElementById('timerDisplay').style.display = 'none';
-        document.getElementById('completeBtn').style.display = 'none';
+        alert(`🎉 All clear! No active tasks in ${pillar}.`);
+        focusModal.style.display = 'none';
         clearInterval(timerInterval);
         return;
       }
 
-      document.getElementById('timerDisplay').style.display = 'block';
-      document.getElementById('completeBtn').style.display = 'block';
+      focusModal.style.display = 'flex';
 
       const topTask = matchingTasks[0];
       currentTaskIndex = topTask.originalIndex;
 
-      document.getElementById('currentPillarLabel').innerText = `${pillar} Pillar Focus`;
+      document.getElementById('currentPillarLabel').innerText = `🚨 ${pillar} LOCKDOWN FOCUS`;
       document.getElementById('focusTaskText').innerText = topTask.text;
       
       startTimer();
-      focusCard.scrollIntoView({ behavior: 'smooth' });
     }
 
     function triggerThrillMode() {
@@ -411,16 +428,13 @@
       const randomTask = activeTasks[Math.floor(Math.random() * activeTasks.length)];
       currentTaskIndex = randomTask.originalIndex;
 
-      const focusCard = document.getElementById('focusCard');
-      focusCard.style.display = 'block';
-      document.getElementById('timerDisplay').style.display = 'block';
-      document.getElementById('completeBtn').style.display = 'block';
+      const focusModal = document.getElementById('focusModal');
+      focusModal.style.display = 'flex';
 
-      document.getElementById('currentPillarLabel').innerText = `🎲 THRILL SPRINT: ${randomTask.pillar}`;
+      document.getElementById('currentPillarLabel').innerText = `🎲 THRILL LOCKDOWN: ${randomTask.pillar}`;
       document.getElementById('focusTaskText').innerText = randomTask.text;
 
       startTimer();
-      focusCard.scrollIntoView({ behavior: 'smooth' });
     }
 
     function completeCurrentTask() {
@@ -443,6 +457,9 @@
 
       triggerDopamineEffect();
       addXP(xpGained);
+
+      // Hide Lockdown Screen after completing
+      document.getElementById('focusModal').style.display = 'none';
 
       const activePillar = task.pillar;
       loadFocusTask(activePillar);
