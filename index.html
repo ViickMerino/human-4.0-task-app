@@ -93,6 +93,12 @@
       font-weight: bold;
       margin: 16px 0;
     }
+    .timer-display {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: #fef08a;
+      margin-bottom: 12px;
+    }
     .complete-btn {
       background: #22c55e;
       color: #fff;
@@ -153,30 +159,47 @@
   <div id="focusCard" class="focus-card">
     <small id="currentPillarLabel" style="text-transform: uppercase; letter-spacing: 1px;"></small>
     <div id="focusTaskText" class="focus-task-title">No task selected</div>
-    <button class="complete-btn" onclick="completeCurrentTask()">✅ COMPLETE (+XP)</button>
+    <div id="timerDisplay" class="timer-display">⏱️ 15:00</div>
+    <button id="completeBtn" class="complete-btn" onclick="completeCurrentTask()">✅ COMPLETE (+XP)</button>
   </div>
 
   <script>
     let currentTaskIndex = -1;
+    let timerInterval = null;
+    let secondsLeft = 900; // 15 Minutes
 
     updateStatsUI();
 
-    function triggerDopamineEffect() {
-      // Confetti burst
-      confetti({
-        particleCount: 100,
-        spread: 70,
-        origin: { y: 0.6 }
-      });
+    function startTimer() {
+      clearInterval(timerInterval);
+      secondsLeft = 900;
+      updateTimerUI();
 
-      // Audio chime sound effect via Web Audio API
+      timerInterval = setInterval(() => {
+        secondsLeft--;
+        updateTimerUI();
+        if (secondsLeft <= 0) {
+          clearInterval(timerInterval);
+        }
+      }, 1000);
+    }
+
+    function updateTimerUI() {
+      const mins = Math.floor(secondsLeft / 60);
+      const secs = secondsLeft % 60;
+      document.getElementById('timerDisplay').innerText = `⏱️ ${mins}:${secs < 10 ? '0' : ''}${secs}`;
+    }
+
+    function triggerDopamineEffect() {
+      confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+
       const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       const osc = audioCtx.createOscillator();
       const gain = audioCtx.createGain();
       
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
-      osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.3); // A5
+      osc.frequency.setValueAtTime(523.25, audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.3);
 
       gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
@@ -193,7 +216,7 @@
       const pillar = document.getElementById('pillarSelect').value;
       let priority = document.getElementById('eisenhowerSelect').value;
 
-      if (!text) return alert('Enter a task first!');
+      if (!text) return;
 
       if (doImmediately) priority = "0";
 
@@ -205,8 +228,6 @@
 
       if (doImmediately) {
         loadFocusTask(pillar);
-      } else {
-        alert('Task saved to bank!');
       }
     }
 
@@ -219,19 +240,29 @@
         .sort((a, b) => Number(a.priority) - Number(b.priority));
 
       const focusCard = document.getElementById('focusCard');
+      focusCard.style.display = 'block';
 
       if (matchingTasks.length === 0) {
-        alert(`No active tasks in ${pillar}!`);
-        focusCard.style.display = 'none';
+        // CLEAN NO-ALERT STATE
+        document.getElementById('currentPillarLabel').innerText = `${pillar} Pillar Status`;
+        document.getElementById('focusTaskText').innerText = `🎉 All clear! No active tasks in ${pillar}.`;
+        document.getElementById('timerDisplay').style.display = 'none';
+        document.getElementById('completeBtn').style.display = 'none';
+        clearInterval(timerInterval);
         return;
       }
+
+      // SHOW ACTIVE TASK + TIMER
+      document.getElementById('timerDisplay').style.display = 'block';
+      document.getElementById('completeBtn').style.display = 'block';
 
       const topTask = matchingTasks[0];
       currentTaskIndex = topTask.originalIndex;
 
       document.getElementById('currentPillarLabel').innerText = `${pillar} Pillar Focus`;
       document.getElementById('focusTaskText').innerText = topTask.text;
-      focusCard.style.display = 'block';
+      
+      startTimer();
       focusCard.scrollIntoView({ behavior: 'smooth' });
     }
 
@@ -248,9 +279,7 @@
       else if (task.priority === "2") xpGained = 75;
       else if (task.priority === "3") xpGained = 50;
 
-      // BLAST CONFETTI + SOUND
       triggerDopamineEffect();
-
       addXP(xpGained);
 
       const activePillar = task.pillar;
