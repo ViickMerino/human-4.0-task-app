@@ -203,7 +203,6 @@
       box-shadow: 0 0 8px rgba(212, 175, 55, 0.4);
     }
 
-    /* FULL-SCREEN LOCKDOWN & TUTORIAL OVERLAYS */
     .focus-modal-overlay, .welcome-modal-overlay {
       position: fixed;
       inset: 0;
@@ -384,6 +383,7 @@
             <input type="text" id="habitInput" placeholder="New Daily Habit Name...">
             
             <select id="habitPillarSelect">
+              <option value="" disabled selected>Select Category</option>
               <option value="Spiritual">Spiritual</option>
               <option value="Physical">Physical</option>
               <option value="Mental">Mental</option>
@@ -435,7 +435,6 @@
   </div>
 
   <script>
-    // PIN MAPPING (NO NAME INPUT NEEDED)
     const PIN_USER_MAP = {
       "1013": "Luis",
       "0325": "Jazzlyn",
@@ -482,7 +481,6 @@
       updateStatsUI();
       renderHabits();
 
-      // Check if user has opted out of welcome modal
       const hideWelcome = localStorage.getItem(`hideWelcome_${currentUser}`);
       if (!hideWelcome) {
         document.getElementById('welcomeHeader').innerText = `Welcome, ${currentUser}!`;
@@ -571,7 +569,7 @@
     }
 
     function saveTask(doImmediately = false) {
-      const text = document.getElementById('taskInput').value;
+      const text = document.getElementById('taskInput').value.trim();
       const pillar = document.getElementById('pillarSelect').value;
       let priority = document.getElementById('eisenhowerSelect').value;
 
@@ -580,13 +578,22 @@
       if (doImmediately) priority = "0";
 
       const tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
-      tasks.push({ text, pillar, priority, done: false, createdBy: currentUser });
+      const newTask = { text, pillar, priority, done: false, createdBy: currentUser };
+      tasks.push(newTask);
       localStorage.setItem('tasks', JSON.stringify(tasks));
 
+      // CLEAR FORM INPUT
       document.getElementById('taskInput').value = '';
 
       if (doImmediately) {
-        loadFocusTask(pillar);
+        const newIndex = tasks.length - 1;
+        currentTaskIndex = newIndex;
+        
+        const focusModal = document.getElementById('focusModal');
+        focusModal.style.display = 'flex';
+        document.getElementById('currentPillarLabel').innerText = `🚨 ${pillar} LOCKDOWN FOCUS`;
+        document.getElementById('focusTaskText').innerText = text;
+        startTimer();
       }
     }
 
@@ -662,10 +669,10 @@
       triggerDopamineEffect();
       addXP(xpGained);
 
+      // SMOOTH CLOSE WITHOUT AUTOMATIC RE-TRIGGER OR POPUP
+      clearInterval(timerInterval);
       document.getElementById('focusModal').style.display = 'none';
-
-      const activePillar = task.pillar;
-      loadFocusTask(activePillar);
+      currentTaskIndex = -1;
     }
 
     function addXP(amount) {
@@ -714,6 +721,7 @@
       const days = parseInt(document.getElementById('habitDaysInput').value) || 7;
 
       if (!name) return alert('Enter habit name!');
+      if (!pillar) return alert('Select a habit category!');
 
       const habits = JSON.parse(localStorage.getItem('habits') || '[]');
       habits.push({
@@ -726,7 +734,11 @@
       });
       localStorage.setItem('habits', JSON.stringify(habits));
 
+      // CLEAR HABIT FORM INPUTS
       document.getElementById('habitInput').value = '';
+      document.getElementById('habitPillarSelect').value = '';
+      document.getElementById('habitDaysInput').value = '7';
+
       renderHabits();
     }
 
