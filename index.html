@@ -25,14 +25,61 @@
       align-items: center;
       justify-content: flex-start;
       min-height: 100vh;
-      padding: 16px;
+      padding: 12px;
     }
+
+    /* SIDE TABS CONTAINER */
+    .app-layout {
+      display: flex;
+      width: 100%;
+      max-width: 440px;
+      gap: 6px;
+      align-items: flex-start;
+    }
+
+    .side-tabs {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 20px;
+    }
+
+    .side-tab-btn {
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+      transform: rotate(180deg);
+      background: #121216;
+      color: #a1a1aa;
+      border: 1px solid #2a2a32;
+      border-radius: 8px 0 0 8px;
+      padding: 14px 6px;
+      font-size: 0.85rem;
+      font-weight: 800;
+      letter-spacing: 1px;
+      cursor: pointer;
+      text-transform: uppercase;
+      width: 34px;
+      text-align: center;
+    }
+
+    .side-tab-btn.active {
+      background: #0a0a0c;
+      color: #d4af37;
+      border: 1px solid #d4af37;
+      border-right: none;
+      box-shadow: -4px 0 12px rgba(212, 175, 55, 0.2);
+    }
+
+    .tab-content {
+      flex: 1;
+      width: 100%;
+    }
+
     .card {
       background: #121216;
       padding: 20px;
       border-radius: 14px;
       width: 100%;
-      max-width: 400px;
       box-shadow: 0 10px 30px rgba(0,0,0,0.9);
       border: 1px solid #2a2a32;
       margin-bottom: 16px;
@@ -110,13 +157,55 @@
       color: #d4af37;
       border: 1px solid #d4af37;
       padding: 14px;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       font-weight: bold;
       border-radius: 8px;
       cursor: pointer;
     }
 
-    /* PERFECT MOBILE LOCKDOWN OVERLAY */
+    /* HABIT STREAK STYLES */
+    .habit-item {
+      background: #0a0a0c;
+      border: 1px solid #2a2a32;
+      padding: 14px;
+      border-radius: 10px;
+      margin-top: 10px;
+    }
+    .habit-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .habit-title { font-weight: bold; color: #fff; }
+    .habit-pillar { font-size: 0.75rem; color: #d4af37; text-transform: uppercase; }
+    .streak-grid {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+    .streak-box {
+      width: 24px;
+      height: 24px;
+      border-radius: 4px;
+      border: 1px solid #334155;
+      background: #121216;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      color: #64748b;
+    }
+    .streak-box.done {
+      background: #d4af37;
+      color: #000;
+      font-weight: bold;
+      border-color: #f5d77f;
+      box-shadow: 0 0 8px rgba(212, 175, 55, 0.4);
+    }
+
+    /* FULL-SCREEN LOCKDOWN MODAL */
     .focus-modal-overlay {
       position: fixed;
       inset: 0;
@@ -187,7 +276,6 @@
     #appContent {
       display: none;
       width: 100%;
-      max-width: 400px;
     }
     .pin-input {
       text-align: center;
@@ -199,71 +287,107 @@
 <body>
 
   <!-- LOGIN SCREEN -->
-  <div class="card" id="loginCard">
+  <div class="card" id="loginCard" style="max-width: 400px;">
     <h2>Access Engine</h2>
     <input type="text" id="usernameInput" placeholder="Your Name or Nickname">
     <input type="password" id="pinInput" class="pin-input" maxlength="4" placeholder="4-DIGIT PIN">
     <button class="now-btn" onclick="attemptLogin()">ENTER FOCUS MODE</button>
-    <p id="loginError" style="color: #ef4444; text-align: center; font-size: 0.85rem; display: none; margin-top: 10px;">Incorrect PIN (Default PIN: 1234)</p>
+    <p id="loginError" style="color: #ef4444; text-align: center; font-size: 0.85rem; display: none; margin-top: 10px;">Incorrect PIN (Valid PINs: 1234, 1013, 1116, 0325)</p>
   </div>
 
   <!-- MAIN APP CONTAINER -->
   <div id="appContent">
-    
-    <!-- STATS HEADER -->
-    <div class="card">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-        <span id="activeUserBadge" style="color: #d4af37; font-weight: bold; font-size: 0.85rem;">👤 USER</span>
-        <button onclick="logout()" style="width: auto; padding: 4px 8px; margin: 0; font-size: 0.75rem; background: #2a2a32; color: #a1a1aa; border: none;">Logout</button>
-      </div>
-      <div class="level-container">
-        <div class="level-badge" id="levelDisplay">⚡ HUMAN LEVEL: 1</div>
-        <div class="xp-text" id="xpDisplay">TOTAL XP: 0 / 100</div>
-        <div class="combo-text" id="comboDisplay">🔥 COMBO: 0x MULTIPLIER</div>
-      </div>
-    </div>
-
-    <!-- ADD TASK SECTION -->
-    <div class="card">
-      <h2>Add Task</h2>
-      <input type="text" id="taskInput" placeholder="What needs to be done?">
+    <div class="app-layout">
       
-      <select id="pillarSelect">
-        <option value="Spiritual">Spiritual</option>
-        <option value="Physical">Physical</option>
-        <option value="Mental">Mental</option>
-        <option value="Vocational">Vocational</option>
-      </select>
-
-      <select id="eisenhowerSelect">
-        <option value="1">🔥 Urgent & Important (+100 XP)</option>
-        <option value="2">📅 Important, Not Urgent (+75 XP)</option>
-        <option value="3">⚡ Urgent, Not Important (+50 XP)</option>
-        <option value="4">🧹 Not Urgent & Not Important (+25 XP)</option>
-      </select>
-
-      <button class="add-btn" onclick="saveTask(false)">Save to Task Bank</button>
-      <button class="now-btn" onclick="saveTask(true)">🚨 DO THIS RIGHT NOW!</button>
-    </div>
-
-    <!-- SELECT PILLAR SECTION -->
-    <div class="card">
-      <h3>Enter Focus Mode</h3>
-      <div class="pillar-grid">
-        <button class="pillar-btn" onclick="loadFocusTask('Spiritual')">Spiritual</button>
-        <button class="pillar-btn" onclick="loadFocusTask('Physical')">Physical</button>
-        <button class="pillar-btn" onclick="loadFocusTask('Mental')">Mental</button>
-        <button class="pillar-btn" onclick="loadFocusTask('Vocational')">Vocational</button>
+      <!-- SIDE NOTEBOOK TABS -->
+      <div class="side-tabs">
+        <button class="side-tab-btn active" id="tabBtnTasks" onclick="switchTab('tasks')">Tasks</button>
+        <button class="side-tab-btn" id="tabBtnHabits" onclick="switchTab('habits')">Habits</button>
       </div>
-      <button class="thrill-btn" onclick="triggerThrillMode()">🎲 RANDOM THRILL SPRINT</button>
-    </div>
 
-    <!-- COMPLETED VAULT -->
-    <div class="card">
-      <button style="background: #121216; border: 1px solid #2a2a32; color: #a1a1aa;" onclick="toggleHistory()">🏆 View Completed Vault</button>
-      <div id="historyList" class="history-list"></div>
-    </div>
+      <!-- MAIN CONTENT VIEW -->
+      <div class="tab-content">
+        
+        <!-- STATS HEADER -->
+        <div class="card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <span id="activeUserBadge" style="color: #d4af37; font-weight: bold; font-size: 0.85rem;">👤 USER</span>
+            <button onclick="logout()" style="width: auto; padding: 4px 8px; margin: 0; font-size: 0.75rem; background: #2a2a32; color: #a1a1aa; border: none;">Logout</button>
+          </div>
+          <div class="level-container">
+            <div class="level-badge" id="levelDisplay">⚡ HUMAN LEVEL: 1</div>
+            <div class="xp-text" id="xpDisplay">TOTAL XP: 0 / 100</div>
+            <div class="combo-text" id="comboDisplay">🔥 COMBO: 0x MULTIPLIER</div>
+          </div>
+        </div>
 
+        <!-- TASKS SECTION VIEW -->
+        <div id="tasksView">
+          <div class="card">
+            <h2>Add Task</h2>
+            <input type="text" id="taskInput" placeholder="What needs to be done?">
+            
+            <select id="pillarSelect">
+              <option value="Home">Home</option>
+              <option value="Work">Work</option>
+              <option value="Viita Inc">Viita Inc</option>
+              <option value="Personal">Personal</option>
+            </select>
+
+            <select id="eisenhowerSelect">
+              <option value="1">🔥 Urgent & Important (+100 XP)</option>
+              <option value="2">📅 Important, Not Urgent (+75 XP)</option>
+              <option value="3">⚡ Urgent, Not Important (+50 XP)</option>
+              <option value="4">🧹 Not Urgent & Not Important (+25 XP)</option>
+            </select>
+
+            <button class="add-btn" onclick="saveTask(false)">Save to Task Bank</button>
+            <button class="now-btn" onclick="saveTask(true)">🚨 DO THIS RIGHT NOW!</button>
+          </div>
+
+          <div class="card">
+            <h3>Enter Focus Mode</h3>
+            <div class="pillar-grid">
+              <button class="pillar-btn" onclick="loadFocusTask('Home')">Home</button>
+              <button class="pillar-btn" onclick="loadFocusTask('Work')">Work</button>
+              <button class="pillar-btn" onclick="loadFocusTask('Viita Inc')">Viita Inc</button>
+              <button class="pillar-btn" onclick="loadFocusTask('Personal')">Personal</button>
+            </div>
+            <button class="thrill-btn" onclick="triggerThrillMode()">🎲 RANDOM THRILL SPRINT</button>
+          </div>
+
+          <div class="card">
+            <button style="background: #121216; border: 1px solid #2a2a32; color: #a1a1aa;" onclick="toggleHistory()">🏆 View Completed Vault</button>
+            <div id="historyList" class="history-list"></div>
+          </div>
+        </div>
+
+        <!-- HABITS SECTION VIEW -->
+        <div id="habitsView" style="display: none;">
+          <div class="card">
+            <h2>Track Habit</h2>
+            <input type="text" id="habitInput" placeholder="New Daily Habit Name...">
+            
+            <select id="habitPillarSelect">
+              <option value="Spiritual">Spiritual</option>
+              <option value="Physical">Physical</option>
+              <option value="Mental">Mental</option>
+              <option value="Vocational">Vocational</option>
+            </select>
+
+            <input type="number" id="habitDaysInput" placeholder="Target Days (e.g. 7, 30, 100)" min="1" max="100" value="7">
+
+            <button class="add-btn" onclick="saveHabit()">+ Add Habit Streak</button>
+          </div>
+
+          <div class="card">
+            <h3>Active Habit Streaks</h3>
+            <div id="habitsListContainer"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
   </div>
 
   <!-- FULL-SCREEN FOCUS LOCKDOWN MODAL -->
@@ -277,7 +401,9 @@
   </div>
 
   <script>
-    const MASTER_PIN = "1234";
+    // ALLOWED ACCESS CODES
+    const ALLOWED_PINS = ["1234", "1013", "1116", "0325"];
+    
     let currentTaskIndex = -1;
     let timerInterval = null;
     let secondsLeft = 60;
@@ -296,7 +422,7 @@
         return;
       }
 
-      if (pin === MASTER_PIN) {
+      if (ALLOWED_PINS.includes(pin)) {
         currentUser = name;
         localStorage.setItem('activeUser', name);
         errorEl.style.display = 'none';
@@ -319,11 +445,32 @@
       document.getElementById('appContent').style.display = 'block';
       document.getElementById('activeUserBadge').innerText = `👤 USER: ${currentUser.toUpperCase()}`;
       updateStatsUI();
+      renderHabits();
     }
 
     function logout() {
       localStorage.removeItem('activeUser');
       location.reload();
+    }
+
+    function switchTab(tab) {
+      const tasksView = document.getElementById('tasksView');
+      const habitsView = document.getElementById('habitsView');
+      const tabBtnTasks = document.getElementById('tabBtnTasks');
+      const tabBtnHabits = document.getElementById('tabBtnHabits');
+
+      if (tab === 'tasks') {
+        tasksView.style.display = 'block';
+        habitsView.style.display = 'none';
+        tabBtnTasks.classList.add('active');
+        tabBtnHabits.classList.remove('active');
+      } else {
+        tasksView.style.display = 'none';
+        habitsView.style.display = 'block';
+        tabBtnTasks.classList.remove('active');
+        tabBtnHabits.classList.add('active');
+        renderHabits();
+      }
     }
 
     function startTimer() {
@@ -507,6 +654,76 @@
       }
 
       historyList.style.display = 'block';
+    }
+
+    /* HABITS LOGIC */
+    function saveHabit() {
+      const name = document.getElementById('habitInput').value.trim();
+      const pillar = document.getElementById('habitPillarSelect').value;
+      const days = parseInt(document.getElementById('habitDaysInput').value) || 7;
+
+      if (!name) return alert('Enter habit name!');
+
+      const habits = JSON.parse(localStorage.getItem('habits') || '[]');
+      habits.push({
+        id: Date.now(),
+        name,
+        pillar,
+        targetDays: days,
+        completedDays: 0,
+        lastUpdated: ""
+      });
+      localStorage.setItem('habits', JSON.stringify(habits));
+
+      document.getElementById('habitInput').value = '';
+      renderHabits();
+    }
+
+    function renderHabits() {
+      const habits = JSON.parse(localStorage.getItem('habits') || '[]');
+      const container = document.getElementById('habitsListContainer');
+
+      if (habits.length === 0) {
+        container.innerHTML = '<p style="text-align:center; color:#64748b; font-size:0.9rem;">No active habits tracked yet.</p>';
+        return;
+      }
+
+      container.innerHTML = habits.map((h, idx) => {
+        let boxes = '';
+        for (let i = 1; i <= h.targetDays; i++) {
+          const isDone = i <= h.completedDays;
+          boxes += `<div class="streak-box ${isDone ? 'done' : ''}">${i}</div>`;
+        }
+
+        const isFullyComplete = h.completedDays >= h.targetDays;
+
+        return `
+          <div class="habit-item">
+            <div class="habit-header">
+              <div>
+                <div class="habit-title">${h.name}</div>
+                <div class="habit-pillar">${h.pillar} • ${h.completedDays}/${h.targetDays} Days</div>
+              </div>
+              ${!isFullyComplete ? `<button style="width:auto; padding:8px 12px; margin:0; font-size:0.8rem;" class="now-btn" onclick="checkInHabit(${idx})">✅ Check-In</button>` : `<span style="color:#d4af37; font-weight:bold; font-size:0.85rem;">🏆 COMPLETED</span>`}
+            </div>
+            <div class="streak-grid">${boxes}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function checkInHabit(index) {
+      const habits = JSON.parse(localStorage.getItem('habits') || '[]');
+      const habit = habits[index];
+
+      if (habit.completedDays < habit.targetDays) {
+        habit.completedDays += 1;
+        localStorage.setItem('habits', JSON.stringify(habits));
+        
+        triggerDopamineEffect();
+        addXP(50);
+        renderHabits();
+      }
     }
   </script>
 
