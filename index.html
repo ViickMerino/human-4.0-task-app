@@ -28,7 +28,6 @@
       padding: 12px;
     }
 
-    /* SIDE TABS CONTAINER */
     .app-layout {
       display: flex;
       width: 100%;
@@ -163,7 +162,6 @@
       cursor: pointer;
     }
 
-    /* HABIT STREAK STYLES */
     .habit-item {
       background: #0a0a0c;
       border: 1px solid #2a2a32;
@@ -205,13 +203,13 @@
       box-shadow: 0 0 8px rgba(212, 175, 55, 0.4);
     }
 
-    /* FULL-SCREEN LOCKDOWN MODAL */
-    .focus-modal-overlay {
+    /* FULL-SCREEN LOCKDOWN & TUTORIAL OVERLAYS */
+    .focus-modal-overlay, .welcome-modal-overlay {
       position: fixed;
       inset: 0;
       width: 100%;
       height: 100%;
-      background: #000000;
+      background: rgba(0, 0, 0, 0.95);
       z-index: 99999;
       display: none;
       flex-direction: column;
@@ -231,6 +229,16 @@
       display: flex;
       flex-direction: column;
       align-items: center;
+    }
+    .welcome-card-inner {
+      background: #121216;
+      border: 1px solid #d4af37;
+      border-radius: 16px;
+      padding: 24px 20px;
+      width: 100%;
+      max-width: 400px;
+      text-align: left;
+      box-shadow: 0 0 30px rgba(212, 175, 55, 0.2);
     }
     .focus-task-title {
       font-size: 1.5rem;
@@ -279,20 +287,27 @@
     }
     .pin-input {
       text-align: center;
-      font-size: 1.5rem;
-      letter-spacing: 8px;
+      font-size: 1.8rem;
+      letter-spacing: 10px;
     }
+    .tutorial-step {
+      font-size: 0.88rem;
+      color: #cbd5e1;
+      margin-bottom: 12px;
+      line-height: 1.4;
+    }
+    .tutorial-step strong { color: #f5d77f; }
   </style>
 </head>
 <body>
 
   <!-- LOGIN SCREEN -->
   <div class="card" id="loginCard" style="max-width: 400px;">
-    <h2>Access Engine</h2>
-    <input type="text" id="usernameInput" placeholder="Your Name or Nickname">
-    <input type="password" id="pinInput" class="pin-input" maxlength="4" placeholder="4-DIGIT PIN">
-    <button class="now-btn" onclick="attemptLogin()">ENTER FOCUS MODE</button>
-    <p id="loginError" style="color: #ef4444; text-align: center; font-size: 0.85rem; display: none; margin-top: 10px;">Incorrect PIN (Valid PINs: 1234, 1013, 1116, 0325)</p>
+    <h2>Focus Engine</h2>
+    <p style="text-align: center; font-size: 0.85rem; color: #a1a1aa; margin-top: 4px;">Enter your 4-digit security PIN</p>
+    <input type="password" id="pinInput" class="pin-input" maxlength="4" placeholder="••••">
+    <button class="now-btn" onclick="attemptLogin()">UNLOCK ACCESS</button>
+    <p id="loginError" style="color: #ef4444; text-align: center; font-size: 0.85rem; display: none; margin-top: 10px;">Invalid PIN</p>
   </div>
 
   <!-- MAIN APP CONTAINER -->
@@ -330,7 +345,7 @@
             <select id="pillarSelect">
               <option value="Home">Home</option>
               <option value="Work">Work</option>
-              <option value="Viita Inc">Viita Inc</option>
+              <option value="Business">Business</option>
               <option value="Personal">Personal</option>
             </select>
 
@@ -350,7 +365,7 @@
             <div class="pillar-grid">
               <button class="pillar-btn" onclick="loadFocusTask('Home')">Home</button>
               <button class="pillar-btn" onclick="loadFocusTask('Work')">Work</button>
-              <button class="pillar-btn" onclick="loadFocusTask('Viita Inc')">Viita Inc</button>
+              <button class="pillar-btn" onclick="loadFocusTask('Business')">Business</button>
               <button class="pillar-btn" onclick="loadFocusTask('Personal')">Personal</button>
             </div>
             <button class="thrill-btn" onclick="triggerThrillMode()">🎲 RANDOM THRILL SPRINT</button>
@@ -390,6 +405,25 @@
     </div>
   </div>
 
+  <!-- WELCOME TUTORIAL MODAL -->
+  <div id="welcomeModal" class="welcome-modal-overlay">
+    <div class="welcome-card-inner">
+      <h2 style="text-align: left; margin-bottom: 12px;" id="welcomeHeader">Welcome!</h2>
+      
+      <div class="tutorial-step">⚡ <strong>Single-Task Focus:</strong> Hides all backlog clutter so your brain executes one priority item at a time.</div>
+      <div class="tutorial-step">🚨 <strong>Emergency Override:</strong> Hit "DO THIS RIGHT NOW" to lock down the screen and trigger a 60-second micro-sprint.</div>
+      <div class="tutorial-step">🏆 <strong>XP & Combos:</strong> Earn Experience Points for completed tasks and stack combo multipliers to level up.</div>
+      <div class="tutorial-step">🔥 <strong>Habit Streaks:</strong> Track daily check-ins under Spiritual, Physical, Mental, and Vocational pillars.</div>
+
+      <div style="display: flex; align-items: center; gap: 8px; margin-top: 16px;">
+        <input type="checkbox" id="dontShowCheckbox" style="width: auto; margin: 0; cursor: pointer;">
+        <label for="dontShowCheckbox" style="font-size: 0.8rem; color: #a1a1aa; cursor: pointer;">Don't show this screen again</label>
+      </div>
+
+      <button class="now-btn" onclick="dismissWelcomeModal()">LET'S GET STARTED</button>
+    </div>
+  </div>
+
   <!-- FULL-SCREEN FOCUS LOCKDOWN MODAL -->
   <div id="focusModal" class="focus-modal-overlay">
     <div class="focus-card-inner">
@@ -401,8 +435,13 @@
   </div>
 
   <script>
-    // ALLOWED ACCESS CODES
-    const ALLOWED_PINS = ["1234", "1013", "1116", "0325"];
+    // PIN MAPPING (NO NAME INPUT NEEDED)
+    const PIN_USER_MAP = {
+      "1013": "Luis",
+      "0325": "Jazzlyn",
+      "1116": "Vic",
+      "1234": "Admin"
+    };
     
     let currentTaskIndex = -1;
     let timerInterval = null;
@@ -413,18 +452,13 @@
     checkExistingSession();
 
     function attemptLogin() {
-      const name = document.getElementById('usernameInput').value.trim();
       const pin = document.getElementById('pinInput').value.trim();
       const errorEl = document.getElementById('loginError');
 
-      if (!name) {
-        alert('Please enter your name!');
-        return;
-      }
-
-      if (ALLOWED_PINS.includes(pin)) {
-        currentUser = name;
-        localStorage.setItem('activeUser', name);
+      if (PIN_USER_MAP[pin]) {
+        currentUser = PIN_USER_MAP[pin];
+        localStorage.setItem('activeUser', currentUser);
+        localStorage.setItem('activePin', pin);
         errorEl.style.display = 'none';
         showApp();
       } else {
@@ -444,12 +478,29 @@
       document.getElementById('loginCard').style.display = 'none';
       document.getElementById('appContent').style.display = 'block';
       document.getElementById('activeUserBadge').innerText = `👤 USER: ${currentUser.toUpperCase()}`;
+      
       updateStatsUI();
       renderHabits();
+
+      // Check if user has opted out of welcome modal
+      const hideWelcome = localStorage.getItem(`hideWelcome_${currentUser}`);
+      if (!hideWelcome) {
+        document.getElementById('welcomeHeader').innerText = `Welcome, ${currentUser}!`;
+        document.getElementById('welcomeModal').style.display = 'flex';
+      }
+    }
+
+    function dismissWelcomeModal() {
+      const dontShow = document.getElementById('dontShowCheckbox').checked;
+      if (dontShow) {
+        localStorage.setItem(`hideWelcome_${currentUser}`, 'true');
+      }
+      document.getElementById('welcomeModal').style.display = 'none';
     }
 
     function logout() {
       localStorage.removeItem('activeUser');
+      localStorage.removeItem('activePin');
       location.reload();
     }
 
